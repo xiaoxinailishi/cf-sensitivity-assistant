@@ -13,11 +13,13 @@
     }
     *{box-sizing:border-box}
     html{scroll-behavior:smooth}
-    body{margin:0;color:var(--text);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:
+    body{margin:0;padding-top:48px;color:var(--text);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif;background:
       radial-gradient(circle at 78% -10%,#1e2938 0,transparent 34rem),
       radial-gradient(circle at 5% 30%,#38170d55 0,transparent 26rem),var(--bg);min-height:100vh}
     button,input,select{font:inherit}
     button{cursor:pointer}
+    .repo-link{position:fixed;left:12px;top:10px;z-index:15;display:flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid #3b4a59;border-radius:9px;background:#0c1219e8;color:#e8eef5;text-decoration:none;font-size:12px;font-weight:850;box-shadow:0 8px 26px #0008;backdrop-filter:blur(8px)}
+    .repo-link:hover{border-color:var(--orange);color:#fff}.repo-link svg{width:17px;height:17px;fill:currentColor}
     .shell{width:min(1180px,calc(100% - 32px));margin:auto}
     header{padding:28px 0 18px;border-bottom:1px solid #ffffff10;position:relative;overflow:hidden}
     header:after{content:"CF";position:absolute;right:2%;top:-55px;font-size:210px;font-weight:1000;font-style:italic;color:#fff03;letter-spacing:-18px;pointer-events:none}
@@ -162,6 +164,7 @@
   </style>
 </head>
 <body>
+  <a class="repo-link" href="https://github.com/xiaoxinailishi/cf-sensitivity-assistant" target="_blank" rel="noopener noreferrer" aria-label="前往 GitHub 仓库"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.39.96.1-.75.4-1.26.74-1.55-2.57-.29-5.27-1.28-5.27-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.16 1.18a10.9 10.9 0 0 1 5.76 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.71 5.38-5.29 5.67.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg><span>GitHub 仓库</span></a>
   <header>
     <div class="shell">
       <nav>
@@ -305,7 +308,7 @@
     const $ = s => document.querySelector(s);
     const arena=$("#arena"), modal=$("#modal"), crosshair=$("#crosshair"), timerEl=$("#timer"),
       hud=$("#arena-hud"), message=$("#arena-message"), labName=$("#lab-name"), labState=$("#lab-state");
-    const state={track:null,flick:null,sniper:null,attempts:{track:0,flick:0,sniper:0},mode:null,running:false,preparing:false,raf:0,start:0,last:0,detectedResolution:null,resolutionReady:true,pointer:{x:0,y:0,inside:false}};
+    const state={track:null,flick:null,sniper:null,attempts:{track:0,flick:0,sniper:0},mode:null,running:false,preparing:false,raf:0,start:0,last:0,detectedResolution:null,resolutionReady:true,resolutionMismatchAcknowledged:false,pointer:{x:0,y:0,inside:false}};
     const PREP_DURATION=2000;
     const HISTORY_KEY="cf-desktop-sensitivity-history-v1";
     const STANDARD_RESOLUTIONS=[[800,600],[1024,768],[1280,720],[1360,768],[1366,768],[1600,900],[1920,1080],[2560,1440],[3840,2160]];
@@ -315,7 +318,7 @@
     const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
     let historyRecords=loadHistory();
 
-    document.querySelectorAll("[data-test]").forEach(b=>b.addEventListener("click",()=>openTest(b.dataset.test)));
+    document.querySelectorAll("[data-test]").forEach(b=>b.addEventListener("click",()=>requestOpenTest(b.dataset.test)));
     document.querySelectorAll("[data-clear-test]").forEach(b=>b.addEventListener("click",()=>clearCurrentTest(b.dataset.clearTest)));
     $("#close-lab").addEventListener("click",closeTest);
     modal.addEventListener("click",e=>{if(e.target===modal)closeTest()});
@@ -328,11 +331,11 @@
     $("#history-file").addEventListener("change",importHistory);
     $("#history-clear").addEventListener("click",clearHistory);
     $("#sens-mode").addEventListener("change",()=>{syncSensitivityMode();invalidateGeneratedResult()});
-    $("#game-resolution").addEventListener("change",invalidateGeneratedResult);
+    $("#game-resolution").addEventListener("change",()=>{state.resolutionMismatchAcknowledged=false;invalidateGeneratedResult()});
     ["dpi","grip"].forEach(id=>$(`#${id}`).addEventListener("change",resetCalibration));
     ["style","pad"].forEach(id=>$(`#${id}`).addEventListener("change",invalidateGeneratedResult));
     $("#resolution-mode").addEventListener("change",()=>{resetCalibration();syncResolutionMode()});
-    $("#resolution").addEventListener("change",()=>{resetCalibration();validateResolution()});
+    $("#resolution").addEventListener("change",()=>{state.resolutionMismatchAcknowledged=false;resetCalibration();validateResolution()});
     $("#refresh-resolution").addEventListener("click",detectResolution);
     ["track","flick","sniper"].forEach(mode=>{
       $(`#time-${mode}`).addEventListener("change",()=>{normalizeTimeInput(mode);resetCalibration()});
@@ -521,6 +524,16 @@
       updateProgress();
     }
 
+    function requestOpenTest(mode){
+      if(!state.resolutionReady)return;
+      const currentResolution=$("#resolution").value,gameResolution=$("#game-resolution").value;
+      if(!state.resolutionMismatchAcknowledged&&currentResolution!==gameResolution){
+        const accepted=confirm(`分辨率换算提示\n\n当前用于测试的分辨率：${currentResolution.replace("x"," × ")}\nCF 游戏内分辨率：${gameResolution.replace("x"," × ")}\n\n两者不同，系统会按分辨率比例换算灵敏度。为了获得更接近游戏内的手感，建议把系统分辨率调整为游戏常用分辨率后重新检测。\n\n是否仍按当前分辨率开始本次测试？`);
+        if(!accepted)return;
+        state.resolutionMismatchAcknowledged=true;
+      }
+      openTest(mode);
+    }
     function openTest(mode){
       enterFullscreen();
       state.mode=mode;state.running=false;state.autoClosing=false;state.pointer.inside=false;cancelAnimationFrame(state.raf);
