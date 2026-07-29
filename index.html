@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#070a0f">
-  <meta name="description" content="CF 穿越火线端游与手游灵敏度测试调试助手统一入口">
+  <meta name="description" content="以 CF 穿越火线端游为主的灵敏度测试调试助手；移动端功能尚未完善，仅供参考">
   <title>CF 穿越火线 · 灵敏度测试调试助手</title>
   <style>
     :root{--bg:#070a0f;--panel:#0e151e;--panel2:#111c27;--line:#293747;--text:#f5f8fb;--muted:#96a7b9;--orange:#ff5722;--cyan:#24d2ff;--green:#50e59c;--red:#ff4f58}
@@ -25,6 +25,7 @@
     h1{max-width:900px;margin:12px 0 20px;font-size:clamp(43px,7vw,84px);line-height:1.02;letter-spacing:-.055em}
     h1 span{color:var(--orange)}
     .lead{max-width:760px;margin:0;color:#a9b8c7;font-size:16px;line-height:1.85}
+    .project-status{max-width:760px;margin:18px 0 0;padding:13px 15px;border-left:4px solid var(--orange);border-radius:8px;background:#35130ddd;color:#ffd8cb;font-size:14px;font-weight:850;line-height:1.7}
     .detect{display:flex;align-items:center;gap:12px;margin:30px 0 22px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#0c131bdd;width:fit-content;max-width:100%}
     .pulse{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 16px var(--green)}
     .detect strong{font-size:14px}.detect span{color:var(--muted);font-size:13px}
@@ -74,6 +75,7 @@
     <div class="eyebrow">CrossFire Sensitivity Assistant</div>
     <h1>先选择设备，<br><span>再校准你的真实手感。</span></h1>
     <p class="lead">端游鼠标与手游触控采用不同的输入模型和测试逻辑。入口会自动识别当前设备，并在进入前校验，避免使用错误设备产生无效推荐。</p>
+    <p class="project-status">项目以 CF 端游版为主要开发与校准对象；移动端功能目前尚未完善，测试结果仅供参考。</p>
 
     <div class="detect" aria-live="polite">
       <i class="pulse"></i>
@@ -96,7 +98,7 @@
         <div class="icon">◎</div>
         <div class="tag">TOUCH / MOBILE</div>
         <h2>CF 手游版</h2>
-        <p>适用于 Android、iOS、HarmonyOS 手机或平板触控浏览器，使用真实手指触控完成测试。</p>
+        <p>适用于 Android、iOS、HarmonyOS 手机或平板触控浏览器，使用真实手指触控完成测试。当前移动端尚未完善，结果仅供参考。</p>
         <div class="features"><span>触控追踪</span><span>点按定位</span><span>狙击微调</span><span>四项手游灵敏度</span></div>
         <button class="enter" data-device="mobile" data-target="CF手游灵敏度调试助手.html">进入手游测试</button>
       </article>

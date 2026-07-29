@@ -433,6 +433,18 @@
       $("#v-mouse-h").textContent=selected.separate.mouseH;$("#v-mouse-v").textContent=selected.separate.mouseV;
       $("#v-scope-h").textContent=selected.separate.scopeH;$("#v-scope-v").textContent=selected.separate.scopeV;
     }
+    function renderTestScore(mode,{candidate=null,count=null,history=false}={}){
+      const best=state[mode];
+      if(!best)return;
+      const safe=(value,suffix="")=>Number.isFinite(Number(value))?`${value}${suffix}`:"—";
+      const main=history
+        ?`历史最佳综合 <b>${Math.round(best.rank||0)}</b>`
+        :`本次综合 ${Math.round(candidate?.rank||0)} · 最佳 <b>${Math.round(best.rank||0)}</b> · 已测 ${count||1} 次`;
+      const meta=mode==="track"
+        ?`精准度 ${safe(best.accuracy,"%")} · 中心稳定 ${safe(best.center,"%")} · 平均偏差 ${safe(best.avgError,"px")} · 疲劳 ${safe(best.fatigue,"%")}`
+        :`命中 ${safe(best.hits)} 次 · 失误 ${safe(best.misses)} 次 · 准确率 ${safe(best.accuracy,"%")} · 平均反应 ${best.avg===999||best.avg===9999?"—":safe(best.avg,"ms")} · 疲劳 ${safe(best.fatigue,"%")}`;
+      $(`#score-${mode}`).innerHTML=`<span class="score-main">${main}</span><span class="score-meta">${history?"历史最佳":"当前保留最佳"}：${meta}</span>`;
+    }
     function restoreBestForCurrentConfig(fromImport){
       const key=configKey(currentConfig()),matches=historyRecords.filter(record=>configKey(record.config)===key);
       if(!matches.length)return false;
@@ -440,9 +452,7 @@
       state.track=structuredClone(record.scores.track);state.flick=structuredClone(record.scores.flick);state.sniper=structuredClone(record.scores.sniper);
       state.attempts={track:1,flick:1,sniper:1};
       ["track","flick","sniper"].forEach(mode=>{$(`#card-${mode}`).classList.add("done");$(`[data-clear-test="${mode}"]`).disabled=false});
-      $("#score-track").innerHTML=`<span class="score-main">历史最佳综合 <b>${Math.round(state.track.rank||0)}</b></span><span class="score-meta">精准度 ${state.track.accuracy}% · 中心稳定 ${state.track.center}% · 平均偏差 ${state.track.avgError}px · 疲劳 ${state.track.fatigue}%</span>`;
-      $("#score-flick").innerHTML=`<span class="score-main">历史最佳综合 <b>${Math.round(state.flick.rank||0)}</b></span><span class="score-meta">命中 ${state.flick.hits} 次 · 失误 ${state.flick.misses} 次 · 准确率 ${state.flick.accuracy}% · 平均反应 ${state.flick.avg===999?"—":state.flick.avg+"ms"} · 疲劳 ${state.flick.fatigue}%</span>`;
-      $("#score-sniper").innerHTML=`<span class="score-main">历史最佳综合 <b>${Math.round(state.sniper.rank||0)}</b></span><span class="score-meta">命中 ${state.sniper.hits} 次 · 失误 ${state.sniper.misses} 次 · 准确率 ${state.sniper.accuracy}% · 平均反应 ${state.sniper.avg===999?"—":state.sniper.avg+"ms"} · 疲劳 ${state.sniper.fatigue}%</span>`;
+      ["track","flick","sniper"].forEach(mode=>renderTestScore(mode,{history:true}));
       updateProgress();applyRecommendations(record.recommendations);
       $("#result-title").textContent="已载入当前配置的历史最佳";
       $("#result-sub").textContent=`记录时间 ${new Date(record.createdAt).toLocaleString()} · 综合 ${Math.round(record.overallRank||0)}${fromImport?" · 来自刚导入的数据":""}`;
@@ -698,22 +708,22 @@
         const fatigue=clamp(Math.round(earlyRate-lateRate),-30,60),adjustedAccuracy=clamp(Math.round(accuracy+Math.max(fatigue,0)*.3),0,100);
         const candidate={accuracy,adjustedAccuracy,center,avgError,avgErrorX,avgErrorY,fatigue,duration};
         candidate.rank=clamp(adjustedAccuracy*.72+center*.20-avgError*.08,0,100);
-        const kept=recordBest("track",candidate),best=kept.best;
-        $("#score-track").innerHTML=`本次综合 ${Math.round(candidate.rank)} · 最佳 <b>${Math.round(best.rank)}</b> · ${kept.count} 次`;$("#card-track").classList.add("done");
+        const kept=recordBest("track",candidate);
+        renderTestScore("track",{candidate,count:kept.count});$("#card-track").classList.add("done");
       }else if(state.mode==="flick"){
         const analysis=analyzeReactions(state.activeDuration),avg=analysis.adjustedAvg,attempts=hits+misses;
         const accuracy=attempts?Math.round(hits/attempts*100):0,avgClickError=clickErrors.length?+(clickErrors.reduce((a,b)=>a+b,0)/clickErrors.length).toFixed(1):0;
         const candidate={hits,misses,avg,rawAvg:analysis.rawAvg,fatigue:analysis.fatigue,accuracy,avgClickError,duration:state.activeDuration};
         candidate.rank=clickRank(candidate,false);
-        const kept=recordBest("flick",candidate),best=kept.best;
-        $("#score-flick").innerHTML=`本次综合 ${Math.round(candidate.rank)} · 最佳 <b>${Math.round(best.rank)}</b> · ${kept.count} 次`;$("#card-flick").classList.add("done");
+        const kept=recordBest("flick",candidate);
+        renderTestScore("flick",{candidate,count:kept.count});$("#card-flick").classList.add("done");
       }else{
         const analysis=analyzeReactions(state.activeDuration),avg=analysis.adjustedAvg,attempts=hits+misses;
         const accuracy=attempts?Math.round(hits/attempts*100):0,avgClickError=clickErrors.length?+(clickErrors.reduce((a,b)=>a+b,0)/clickErrors.length).toFixed(1):0;
         const candidate={hits,misses,avg,rawAvg:analysis.rawAvg,fatigue:analysis.fatigue,accuracy,avgClickError,duration:state.activeDuration};
         candidate.rank=clickRank(candidate,true);
-        const kept=recordBest("sniper",candidate),best=kept.best;
-        $("#score-sniper").innerHTML=`本次综合 ${Math.round(candidate.rank)} · 最佳 <b>${Math.round(best.rank)}</b> · ${kept.count} 次`;$("#card-sniper").classList.add("done");
+        const kept=recordBest("sniper",candidate);
+        renderTestScore("sniper",{candidate,count:kept.count});$("#card-sniper").classList.add("done");
       }
       timerEl.textContent="0.0";labState.textContent="DONE";showFinish();updateProgress();scheduleAutoClose();
     }
