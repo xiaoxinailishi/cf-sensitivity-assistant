@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#070a0f">
+  <meta name="description" content="CF 穿越火线端游与手游灵敏度测试调试助手统一入口">
+  <title>CF 穿越火线 · 灵敏度测试调试助手</title>
+  <style>
+    :root{--bg:#070a0f;--panel:#0e151e;--panel2:#111c27;--line:#293747;--text:#f5f8fb;--muted:#96a7b9;--orange:#ff5722;--cyan:#24d2ff;--green:#50e59c;--red:#ff4f58}
+    *{box-sizing:border-box}
+    html{background:var(--bg);scroll-behavior:smooth}
+    body{margin:0;min-height:100vh;color:var(--text);font-family:"Segoe UI","Microsoft YaHei",sans-serif;background:
+      radial-gradient(circle at 15% 15%,#57200e55 0,transparent 27rem),
+      radial-gradient(circle at 85% 5%,#15385288 0,transparent 30rem),var(--bg)}
+    a,button{font:inherit}
+    .shell{width:min(1160px,calc(100% - 32px));margin:auto}
+    header{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:22px 0}
+    .brand{display:flex;align-items:center;gap:11px;font-weight:900;letter-spacing:.04em}
+    .mark{width:42px;height:42px;display:grid;place-items:center;background:var(--orange);font-style:italic;clip-path:polygon(0 0,100% 0,82% 100%,0 100%)}
+    .repo{color:#dce6ef;text-decoration:none;border:1px solid var(--line);border-radius:9px;padding:9px 13px;background:#0b1118cc;font-size:13px;font-weight:800}
+    .repo:hover{border-color:var(--orange)}
+    main{padding:56px 0 68px}
+    .eyebrow{color:#ff9c78;font-size:12px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+    h1{max-width:900px;margin:12px 0 20px;font-size:clamp(43px,7vw,84px);line-height:1.02;letter-spacing:-.055em}
+    h1 span{color:var(--orange)}
+    .lead{max-width:760px;margin:0;color:#a9b8c7;font-size:16px;line-height:1.85}
+    .detect{display:flex;align-items:center;gap:12px;margin:30px 0 22px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:#0c131bdd;width:fit-content;max-width:100%}
+    .pulse{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 16px var(--green)}
+    .detect strong{font-size:14px}.detect span{color:var(--muted);font-size:13px}
+    .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .card{position:relative;min-height:390px;padding:30px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#111923ed,#0a1017ed);overflow:hidden;transition:.22s ease}
+    .card:before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 55%,#ffffff06);pointer-events:none}
+    .card:hover{transform:translateY(-3px);border-color:#526273}
+    .card.recommended{border-color:#3e8f71;box-shadow:0 0 0 1px #4ee29b33,0 22px 55px #0006}
+    .card.recommended:after{content:"当前设备推荐";position:absolute;right:18px;top:18px;padding:6px 10px;border-radius:999px;color:#06120d;background:var(--green);font-size:11px;font-weight:1000}
+    .number{color:#ffffff0b;font-size:112px;line-height:.8;font-weight:1000;font-style:italic;position:absolute;right:20px;bottom:24px}
+    .icon{width:48px;height:48px;display:grid;place-items:center;border-radius:12px;background:#ff57221a;color:var(--orange);font-size:24px}
+    .card.mobile .icon{background:#24d2ff17;color:var(--cyan)}
+    .card h2{font-size:30px;margin:24px 0 9px}
+    .tag{color:#ff9a75;font-size:12px;font-weight:900;letter-spacing:.12em}
+    .mobile .tag{color:#73e2fb}
+    .card p{max-width:440px;min-height:78px;color:#9dafc0;line-height:1.75;font-size:14px}
+    .features{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 28px}
+    .features span{padding:6px 9px;border:1px solid #344252;border-radius:7px;color:#c4d0db;background:#0a1017;font-size:11px}
+    .enter{position:relative;z-index:2;width:100%;height:50px;border:0;border-radius:10px;background:var(--orange);color:#fff;font-weight:1000;cursor:pointer}
+    .mobile .enter{background:var(--cyan);color:#051015}
+    .enter:hover{filter:brightness(1.08)}
+    .note{margin:22px 0 0;color:#718396;font-size:12px;line-height:1.7}
+    .modal{position:fixed;inset:0;z-index:100;display:none;place-items:center;padding:20px;background:#020508dd;backdrop-filter:blur(8px)}
+    .modal.open{display:grid}
+    .dialog{width:min(480px,100%);padding:26px;border:1px solid #435262;border-radius:16px;background:#0d151e;box-shadow:0 28px 80px #000}
+    .dialog .warning{color:var(--red);font-weight:1000;font-size:12px;letter-spacing:.1em}
+    .dialog h3{font-size:24px;margin:10px 0}
+    .dialog p{color:#a8b7c5;line-height:1.75}
+    .dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+    .dialog button{height:45px;border-radius:9px;border:1px solid #405061;background:#111b25;color:#e9f0f6;font-weight:850;cursor:pointer}
+    .dialog .correct{border:0;background:var(--orange);color:#fff}
+    footer{padding:24px 0 34px;border-top:1px solid #ffffff10;color:#718294;font-size:12px}
+    @media(max-width:720px){
+      .shell{width:min(100% - 22px,1160px)}header{padding:14px 0}.brand span{font-size:13px}.repo{font-size:11px;padding:8px 10px}
+      main{padding:38px 0 50px}h1{font-size:clamp(39px,12vw,60px)}.lead{font-size:14px}.detect{align-items:flex-start}
+      .cards{grid-template-columns:1fr}.card{min-height:350px;padding:23px}.card h2{font-size:27px}.card p{min-height:0}.dialog-actions{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <header class="shell">
+    <div class="brand"><div class="mark">CF</div><span>穿越火线 · 灵敏度实验室</span></div>
+    <a class="repo" href="https://github.com/xiaoxinailishi/cf-sensitivity-assistant" target="_blank" rel="noopener noreferrer">GitHub 仓库</a>
+  </header>
+
+  <main class="shell">
+    <div class="eyebrow">CrossFire Sensitivity Assistant</div>
+    <h1>先选择设备，<br><span>再校准你的真实手感。</span></h1>
+    <p class="lead">端游鼠标与手游触控采用不同的输入模型和测试逻辑。入口会自动识别当前设备，并在进入前校验，避免使用错误设备产生无效推荐。</p>
+
+    <div class="detect" aria-live="polite">
+      <i class="pulse"></i>
+      <div><strong id="device-title">正在检测设备…</strong><br><span id="device-detail">读取浏览器输入能力</span></div>
+    </div>
+
+    <section class="cards" aria-label="选择测试版本">
+      <article class="card" id="desktop-card">
+        <div class="number">PC</div>
+        <div class="icon">⌖</div>
+        <div class="tag">MOUSE / DESKTOP</div>
+        <h2>CF 端游版</h2>
+        <p>适用于 Windows、macOS 桌面浏览器和真实鼠标，测试鼠标移动速度与狙击镜移动速度。</p>
+        <div class="features"><span>鼠标追踪</span><span>快速定位</span><span>狙击微调</span><span>DPI / 分辨率换算</span></div>
+        <button class="enter" data-device="desktop" data-target="CF灵敏度调试助手.html">进入端游测试</button>
+      </article>
+
+      <article class="card mobile" id="mobile-card">
+        <div class="number">M</div>
+        <div class="icon">◎</div>
+        <div class="tag">TOUCH / MOBILE</div>
+        <h2>CF 手游版</h2>
+        <p>适用于 Android、iOS、HarmonyOS 手机或平板触控浏览器，使用真实手指触控完成测试。</p>
+        <div class="features"><span>触控追踪</span><span>点按定位</span><span>狙击微调</span><span>四项手游灵敏度</span></div>
+        <button class="enter" data-device="mobile" data-target="CF手游灵敏度调试助手.html">进入手游测试</button>
+      </article>
+    </section>
+    <p class="note">本地浏览器运行，测试数据仅保存在当前浏览器缓存中，不上传。网页不能自动读取鼠标驱动 DPI、修改系统分辨率或读取手机真实触控采样率。</p>
+  </main>
+
+  <footer><div class="shell">非官方社区工具 · 建议值仅用于建立起点，请在游戏中逐步微调。</div></footer>
+
+  <div class="modal" id="device-modal" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+    <div class="dialog">
+      <div class="warning">DEVICE MISMATCH / 设备不匹配</div>
+      <h3 id="dialog-title">当前设备不适合这个版本</h3>
+      <p id="dialog-text"></p>
+      <div class="dialog-actions">
+        <button type="button" id="dialog-cancel">返回选择</button>
+        <button type="button" class="correct" id="dialog-correct">进入推荐版本</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    "use strict";
+    const $=selector=>document.querySelector(selector);
+    const hasMobileUa=/Android|iPhone|iPad|iPod|Mobile|HarmonyOS/i.test(navigator.userAgent);
+    const hasCoarsePointer=matchMedia("(pointer:coarse)").matches;
+    const hasTouch=(navigator.maxTouchPoints||0)>1;
+    const compactScreen=Math.min(screen.width,screen.height)<1100;
+    const device=(hasMobileUa||(hasTouch&&hasCoarsePointer&&compactScreen))?"mobile":"desktop";
+    const labels={desktop:"桌面鼠标设备",mobile:"手机 / 平板触控设备"};
+    const targets={desktop:"CF灵敏度调试助手.html",mobile:"CF手游灵敏度调试助手.html"};
+
+    $("#device-title").textContent=`检测为：${labels[device]}`;
+    $("#device-detail").textContent=device==="desktop"
+      ?`鼠标/精细指针环境 · ${screen.width} × ${screen.height}`
+      :`${navigator.maxTouchPoints||0} 点触控 · ${screen.width} × ${screen.height}`;
+    $(`#${device}-card`).classList.add("recommended");
+
+    document.querySelectorAll(".enter").forEach(button=>button.addEventListener("click",()=>{
+      const selected=button.dataset.device;
+      if(selected===device){location.href=button.dataset.target;return}
+      $("#dialog-text").textContent=`当前检测为${labels[device]}，而你选择的是${labels[selected]}版本。两版测试模型不同，错误设备会使结果失真。`;
+      $("#dialog-correct").textContent=`进入${device==="desktop"?"端游":"手游"}推荐版本`;
+      $("#device-modal").classList.add("open");
+    }));
+    $("#dialog-cancel").onclick=()=>$("#device-modal").classList.remove("open");
+    $("#dialog-correct").onclick=()=>location.href=targets[device];
+    $("#device-modal").addEventListener("click",event=>{if(event.target===$("#device-modal"))$("#device-modal").classList.remove("open")});
+    document.addEventListener("keydown",event=>{if(event.key==="Escape")$("#device-modal").classList.remove("open")});
+  })();
+  </script>
+</body>
+</html>
