@@ -70,8 +70,9 @@
     .test-icon{width:38px;height:38px;border-radius:10px;background:#ff5a1f16;color:var(--orange);display:grid;place-items:center;font-weight:900;margin-bottom:18px}
     .test-card h3{margin:0 0 9px;font-size:19px}
     .test-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.65;max-width:92%}
-    .test-score{margin-top:auto;padding-top:18px;color:#dce3eb;font-size:13px;min-height:39px}
+    .test-score{margin-top:auto;padding-top:18px;color:#dce3eb;font-size:13px;min-height:58px;line-height:1.55}
     .test-score b{color:var(--good);font-size:18px}
+    .score-main,.score-meta{display:block}.score-meta{margin-top:3px;color:#9fb0c1;font-size:11px}
     .btn{border:0;border-radius:9px;padding:12px 16px;font-weight:800;background:var(--orange);color:white;box-shadow:0 8px 25px #ff5a1f28;transition:.18s}
     .btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
@@ -439,9 +440,9 @@
       state.track=structuredClone(record.scores.track);state.flick=structuredClone(record.scores.flick);state.sniper=structuredClone(record.scores.sniper);
       state.attempts={track:1,flick:1,sniper:1};
       ["track","flick","sniper"].forEach(mode=>{$(`#card-${mode}`).classList.add("done");$(`[data-clear-test="${mode}"]`).disabled=false});
-      $("#score-track").innerHTML=`历史最佳综合 <b>${Math.round(state.track.rank||0)}</b>`;
-      $("#score-flick").innerHTML=`历史最佳综合 <b>${Math.round(state.flick.rank||0)}</b>`;
-      $("#score-sniper").innerHTML=`历史最佳综合 <b>${Math.round(state.sniper.rank||0)}</b>`;
+      $("#score-track").innerHTML=`<span class="score-main">历史最佳综合 <b>${Math.round(state.track.rank||0)}</b></span><span class="score-meta">精准度 ${state.track.accuracy}% · 中心稳定 ${state.track.center}% · 平均偏差 ${state.track.avgError}px · 疲劳 ${state.track.fatigue}%</span>`;
+      $("#score-flick").innerHTML=`<span class="score-main">历史最佳综合 <b>${Math.round(state.flick.rank||0)}</b></span><span class="score-meta">命中 ${state.flick.hits} 次 · 失误 ${state.flick.misses} 次 · 准确率 ${state.flick.accuracy}% · 平均反应 ${state.flick.avg===999?"—":state.flick.avg+"ms"} · 疲劳 ${state.flick.fatigue}%</span>`;
+      $("#score-sniper").innerHTML=`<span class="score-main">历史最佳综合 <b>${Math.round(state.sniper.rank||0)}</b></span><span class="score-meta">命中 ${state.sniper.hits} 次 · 失误 ${state.sniper.misses} 次 · 准确率 ${state.sniper.accuracy}% · 平均反应 ${state.sniper.avg===999?"—":state.sniper.avg+"ms"} · 疲劳 ${state.sniper.fatigue}%</span>`;
       updateProgress();applyRecommendations(record.recommendations);
       $("#result-title").textContent="已载入当前配置的历史最佳";
       $("#result-sub").textContent=`记录时间 ${new Date(record.createdAt).toLocaleString()} · 综合 ${Math.round(record.overallRank||0)}${fromImport?" · 来自刚导入的数据":""}`;
